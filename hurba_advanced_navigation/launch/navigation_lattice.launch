@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Move Base -->
+    <node name="move_base" pkg="move_base" type="move_base" respawn="false" output="screen">
+        <!--remap from="cmd_vel" to="input"/-->
+        <param name="base_global_planner" value="SBPLLatticePlanner" />
+        <!--param name="base_global_planner" value="global_planner/GlobalPlanner" /-->
+        <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS"/>
+        <param name="transform_tolerance" value="0.2"/>
+        <param name="SBPLLatticePlanner/primitive_filename" value="$(find hurba_advanced_navigation)/config/pr2.mprim" />
+        <rosparam file="$(find hurba_advanced_navigation)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find hurba_advanced_navigation)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find hurba_advanced_navigation)/config/local_costmap_params.yaml" command="load" />
+        <rosparam file="$(find hurba_advanced_navigation)/config/global_costmap_params.yaml" command="load" />
+        <rosparam file="$(find hurba_advanced_navigation)/config/teb_local_planner_params.yaml" command="load" />
+        <rosparam file="$(find hurba_advanced_navigation)/config/lattice_global_planner_params.yaml" command="load" />
+        <!--rosparam file="$(find hurba_advanced_navigation)/config/global_planner_params.yaml" command="load" /-->
+    </node>
+
+</launch>
