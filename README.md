@@ -24,6 +24,28 @@
 2. Build workspace: `catkin_make`
 3. Source environment: `source devel/setup.bash` 
 
+Robot pose EKF, disable TF from Gazebo:
+https://answers.ros.org/question/229722/how-to-stop-gazebo-publishing-tf/
+
+FYI, my modification to /opt/ros/melodic/share/gazebo_ros/launch/empty_world.launch is a little bit different than what DavidN has mentioned:
+
+<!-- start gazebo server-->
+  <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false" output="screen" 
+    args="$(arg command_arg1) $(arg command_arg2) $(arg command_arg3) $(arg world_name)">    
+  <remap from="tf" to="gazebo_tf"/> 
+</node>
+
+Found 2 error(s).
+
+ERROR TF re-parenting contention:
+ * reparenting of [base_footprint] to [odom_combined] by [/robot_pose_ekf]
+ * reparenting of [base_footprint] to [odom] by [/gazebo]
+
+ERROR TF multiple authority contention:
+ * node [/robot_pose_ekf] publishing transform [base_footprint] with parent [odom_combined] already published by node [/gazebo]
+ * node [/gazebo] publishing transform [base_footprint] with parent [odom] already published by node [/robot_pose_ekf]
+
+
 ### Test the simulation
 1. Start the Gazebo simulation: `roslaunch hurba_navigation world.launch`
 2. Start the teleop package: `roslaunch hurba_navigation teleop.launch`
