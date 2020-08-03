@@ -84,7 +84,7 @@ int main( int argc, char** argv )
     if( sqrt(pow(x_distance, 2) + pow(y_distance, 2)) < pickup_range ) {
         marker.action = visualization_msgs::Marker::DELETE;
         marker_pub.publish(marker);
-        ROS_INFO("Goal reached!");
+        ROS_INFO("Marker reached!");
 
         i++;
 
