@@ -79,7 +79,7 @@
     </node-->
 
     <!--launch rviz and remap initialpose topic to waypoint for waypoints navigation-->
-    <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find hurba_advanced_navigation)/rviz/amcl_navigation.rviz">
+    <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find hurba_advanced_navigation)/rviz/navigation.rviz">
         <remap from="initialpose" to="waypoint" />
     </node>
 
