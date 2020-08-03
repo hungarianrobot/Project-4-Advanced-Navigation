@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- Launch other relevant files-->
+    <include file="$(find hurba_advanced_navigation)/launch/world.launch"/>
+
+    <!-- Map Server -->
+    <arg name="map_file" default="$(find hurba_advanced_navigation)/maps/map.yaml"/>
+    <!--arg name="map_file" default="$(env HURBA_MAP_FILE)"/-->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)">
+    </node>
+
+    <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
+        <remap from="imu_data" to="imu"/>
+        <param name="output_frame" value="odom_combined"/>
+        <param name="base_footprint_frame" value="base_footprint"/>
+        <param name="freq" value="30.0"/>
+        <param name="sensor_timeout" value="1.0"/>
+        <param name="odom_used" value="true"/>
+        <param name="imu_used" value="true"/>
+        <param name="vo_used" value="false"/>
+        <param name="debug" value="false"/>
+        <param name="self_diagnose" value="false"/>
+    </node>
+
+    <!-- AMCL Node -->
+    <arg name="initial_pose_x"  default="0.0"/>
+    <arg name="initial_pose_y"  default="0.0"/>
+    <arg name="initial_pose_a"  default="1.5707"/>
+    <node name="amcl" pkg="amcl" type="amcl" output="screen">
+        <remap from="initialpose" to="initialpose_amcl"/>
+        <!--remap from="scan" to="my_robot/laser/scan"/-->
+        <param name="odom_frame_id" value="odom_combined"/>
+        <param name="odom_model_type" value="omni"/>
+        <param name="base_frame_id" value="base_footprint"/>
+        <param name="global_frame_id" value="map"/>
+        <param name="scan_topic" value="scan"/>
+        <!-- If you choose to define initial pose here -->
+        <param name="initial_pose_x" value="$(arg initial_pose_x)"/>
+        <param name="initial_pose_y" value="$(arg initial_pose_y)"/>
+        <param name="initial_pose_a" value="$(arg initial_pose_a)"/>
+        <!-- dynamically adjusts particles for every iteration -->
+        <param name="min_particles" value="500"/>
+        <param name="max_particles" value="3000"/>
+        <!-- Perform update parameters -->
+        <param name="update_min_d" value="0.1"/>
+        <param name="update_min_a" value="0.1"/>
+        <param name="laser_model_type" value="likelihood_field"/>
+        <param name="laser_max_range" value="10.0"/>
+        <param name="odom_alpha1" value="0.1"/>
+        <param name="odom_alpha2" value="0.1"/>
+        <param name="odom_alpha3" value="0.1"/>
+        <param name="odom_alpha4" value="0.1"/>
+        <param name="odom_alpha5" value="0.1"/>
+
+        <param name="kld_err"                   value="0.02"/>
+        <param name="resample_interval"         value="1"/>
+        <param name="transform_tolerance"       value="0.5"/>
+        <param name="recovery_alpha_slow"       value="0.00"/>
+        <param name="recovery_alpha_fast"       value="0.00"/>
+        <param name="gui_publish_rate"          value="50.0"/>
+        <param name="laser_max_beams"           value="180"/>
+        <param name="laser_z_hit"               value="0.5"/>
+        <param name="laser_z_short"             value="0.05"/>
+        <param name="laser_z_max"               value="0.05"/>
+        <param name="laser_z_rand"              value="0.5"/>
+        <param name="laser_sigma_hit"           value="0.2"/>
+        <param name="laser_lambda_short"        value="0.1"/>
+        <param name="laser_likelihood_max_dist" value="2.0"/>
+    </node>
+
+    <node pkg="follow_waypoints" type="follow_waypoints" name="follow_waypoints" output="screen">
+        <param name="goal_frame_id" value="map"/>
+        <remap from="initialpose" to="waypoint" />
+    </node>
+
+    <!--node name="cob_base_velocity_smoother" pkg="cob_base_velocity_smoother"  type="cob_base_velocity_smoother" output="screen">
+        <remap from="output" to="cmd_vel"/>
+    </node-->
+
+    <!--launch rviz and remap initialpose topic to waypoint for waypoints navigation-->
+    <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find hurba_advanced_navigation)/rviz/amcl_navigation.rviz">
+        <remap from="initialpose" to="waypoint" />
+    </node>
+
+</launch>
