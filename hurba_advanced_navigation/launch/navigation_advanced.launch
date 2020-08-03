@@ -7,7 +7,7 @@
         <param name="base_global_planner" value="global_planner/GlobalPlanner" />
         <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS"/>
         <param name="transform_tolerance" value="0.2"/>
-        <param name="SBPLLatticePlanner/primitive_filename" value="$(find hurba_advanced_navigation)/config/pr2.mprim" />
+        <!--param name="SBPLLatticePlanner/primitive_filename" value="$(find hurba_advanced_navigation)/config/pr2.mprim" /-->
         <rosparam file="$(find hurba_advanced_navigation)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
         <rosparam file="$(find hurba_advanced_navigation)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
         <rosparam file="$(find hurba_advanced_navigation)/config/local_costmap_params.yaml" command="load" />
