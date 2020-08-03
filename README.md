@@ -18,6 +18,9 @@
 - [Map server](http://wiki.ros.org/map_server "Map server")
 - [move_base](http://wiki.ros.org/move_base "move_base")
 
+
+https://wiki.ros.org/Events/CoTeSys-ROS-School?action=AttachFile&do=get&target=robschooltutorial_oct10.pdf
+
 ### Project build instrctions:
 1. Clone this repo inside the `src` folder of a catkin workspace:
 `git clone https://github.com/hungarianrobot/Project-3-Navigation`
