@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- add markers -->
+    <node name="add_markers" pkg="hurba_advanced_navigation" type="add_markers" respawn="false" output="screen">
+    </node>
+
+    <!-- navigation goals -->
+    <node name="nav_goals" pkg="hurba_advanced_navigation" type="nav_goals" respawn="false" output="screen">
+    </node>
+
+</launch>
