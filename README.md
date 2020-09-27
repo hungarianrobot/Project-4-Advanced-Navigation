@@ -1,43 +1,48 @@
-# HURBA: Navigation tutorial III.
+# HURBA: Advanced navigation tutorial IV.
 
 [//]: # (Image References)
 
 [image1]: ./documentation/gazebo.png "Gazebo"
 [image2]: ./documentation/map.png "Map"
-[image5]: ./documentation/rtabmap.png "RTAB-Map"
-[image7]: ./documentation/database.png "Database"
+[image3]: ./documentation/frames.png "Frames"
+[image4]: ./documentation/goals.png "Goals"
+[image5]: ./documentation/waypoints.png "Waypoints"
+[image6]: ./documentation/rosgraph_teleop.png "Teleop"
+[image7]: ./documentation/rosgraph_navigation.png "Navigation"
 
 ### Dependencies:
 - [ROS Melodic](http://wiki.ros.org/melodic "ROS Melodic")
 - [Gazebo 9](http://wiki.ros.org/gazebo_ros_pkgs "Gazebo ROS package")
 - [RViz](http://wiki.ros.org/rviz "RViz")
 - [Teleop twist keyboard](http://wiki.ros.org/teleop_twist_keyboard "Teleop twist keyboard")
-- [GMapping](http://wiki.ros.org/gmapping "GMapping")
-- [RTAB-Map](http://wiki.ros.org/rtabmap_ros "RTAB-Map")
 - [AMCL](http://wiki.ros.org/amcl "AMCL")
 - [Map server](http://wiki.ros.org/map_server "Map server")
 - [move_base](http://wiki.ros.org/move_base "move_base")
-
-
-https://wiki.ros.org/Events/CoTeSys-ROS-School?action=AttachFile&do=get&target=robschooltutorial_oct10.pdf
+- [robot_pose_ekf](http://wiki.ros.org/robot_pose_ekf "robot_pose_ekf")
+- [follow_waypoints](http://wiki.ros.org/follow_waypoints "follow_waypoints")
+- [cob_base_velocity_smoother](http://wiki.ros.org/cob_base_velocity_smoother "cob_base_velocity_smoother")
+- [teb_local_planner](http://wiki.ros.org/teb_local_planner "teb_local_planner")
+- [sbpl_lattice_planner (optional)](http://wiki.ros.org/sbpl_lattice_planner "sbpl_lattice_planner")
 
 ### Project build instrctions:
 1. Clone this repo inside the `src` folder of a catkin workspace:
-`git clone https://github.com/hungarianrobot/Project-3-Navigation`
+`git clone https://github.com/hungarianrobot/Project-4-Advanced-Navigation`
 2. Build workspace: `catkin_make`
-3. Source environment: `source devel/setup.bash` 
-
-Robot pose EKF, disable TF from Gazebo:
-https://answers.ros.org/question/229722/how-to-stop-gazebo-publishing-tf/
-
-FYI, my modification to /opt/ros/melodic/share/gazebo_ros/launch/empty_world.launch is a little bit different than what DavidN has mentioned:
-
+3. Source environment: `source devel/setup.bash`
+4. We'll use a simulated IMU and the robot_pose_ekf package for sensor fusion. robot_pose_ekf will provide transformation between odom frame and base_link so
+[we have to disable the default transformation of Gazebo](https://answers.ros.org/question/229722/how-to-stop-gazebo-publishing-tf/ "disable tfs")!
+Edit `/opt/ros/melodic/share/gazebo_ros/launch/empty_world.launch`:
+```xml
 <!-- start gazebo server-->
   <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false" output="screen" 
     args="$(arg command_arg1) $(arg command_arg2) $(arg command_arg3) $(arg world_name)">    
   <remap from="tf" to="gazebo_tf"/> 
 </node>
+```
 
+Note: we can use the `roswtf` package anytime to debug tf issues! E.g. in this case this is the output of `roswtf`:
+
+```bash
 Found 2 error(s).
 
 ERROR TF re-parenting contention:
@@ -47,142 +52,157 @@ ERROR TF re-parenting contention:
 ERROR TF multiple authority contention:
  * node [/robot_pose_ekf] publishing transform [base_footprint] with parent [odom_combined] already published by node [/gazebo]
  * node [/gazebo] publishing transform [base_footprint] with parent [odom] already published by node [/robot_pose_ekf]
-
+```
 
 ### Test the simulation
-1. Start the Gazebo simulation: `roslaunch hurba_navigation world.launch`
-2. Start the teleop package: `roslaunch hurba_navigation teleop.launch`
-3. Start RViz and open the `basic_view.rviz` configuration.
-4. Drive the omnidirectional robot inside the simulated environment.
+1. Start the Gazebo simulation: `roslaunch hurba_advanced_navigation bringup.launch`
+2. Start the teleop package: `roslaunch hurba_advanced_navigation teleop.launch`
+3. Drive the omnidirectional robot inside the simulated environment.
 
 ![alt text][image1]
 
+### Navigation launch files
+There are 3 different navigation configuration with 3 different launchfiles in the project.
+The difference among these navigation configurations is the used plugin for local and global planning.
 
-### [Optional] Save the map for localization
-The localization uses the known map of the environment, so in the first step we have to prepare these maps. This repository already contains the saved map for AMCL and RTAB-Map in the `hurba_navigation/maps/` folder.
-Note: the RTAB-Map database is stored as [Git LFS file](https://git-lfs.github.com/ "Git LFS file").
+##### navigation_basic.launch
+- Global planner: [NavfnROS](http://wiki.ros.org/navfn "NavfnROS") 
+- Local planner: [TrajectoryPlannerROS](http://wiki.ros.org/base_local_planner "TrajectoryPlannerROS")
 
-#### Saving map from GMapping:
-1. Start the GMapping package: `roslaunch hurba_navigation gmapping_slam.launch`
-2. Start the teleop package: `roslaunch hurba_navigation teleop.launch`
-3. Drive around the simulated world until you're satisfied with the resulted map.
-4. Save the map with the following ROS node: `rosrun map_server map_saver -f map`
-5. This will save the map.pmg and map.yaml files to folder from which the command was executed.
+##### navigation_advanced.launch
+- Global planner: [GlobalPlanner](http://wiki.ros.org/global_planner "global_planner")
+- Local planner: [TebLocalPlannerROS](http://wiki.ros.org/teb_local_planner "teb_local_planner")
 
-![alt text][image2]
+##### navigation_lattice.launch
+- Global planner: [SBPLLatticePlanner](http://wiki.ros.org/sbpl_lattice_planner "sbpl_lattice_planner")
+- Local planner: [TebLocalPlannerROS](http://wiki.ros.org/teb_local_planner "teb_local_planner")
 
-#### Saving map from RTAB-Map:
-1. Start the RTAB-Map package: `roslaunch hurba_navigation rtab_map_slam.launch`
-2. Start the teleop package: `roslaunch hurba_navigation teleop.launch`
-3. Drive around the simulated world until you're satisfied with the resulted map.
-4. Exit the node with Ctrl+C and the database file will be saved to the location specified in the launchfile.
+Lattice global planner is and advanced planner for robots that handles non-circular footprints and nonholonomic constraints using motion primitives. Motion primitives are short, kinematically feasible motions which form the basis of movements that can be performed by the robot platform. Search-based planners can generate paths from start to goal configurations by combining a series of these motion primitives. The result is a smooth kinematically feasible path for the robot to follow. At the same time it's really resource consuming, so I don't suggest to use it in embedded environment. For more details, you can visit the following link:
+https://wiki.ros.org/Events/CoTeSys-ROS-School?action=AttachFile&do=get&target=robschooltutorial_oct10.pdf
+
+#### Launch the navigation with any of the launchfiles from above:
+
+1. Start the Gazebo simulation: `roslaunch hurba_advanced_navigation bringup.launch`
+2. Start the navigation package: `roslaunch hurba_advanced_navigation navigation_XXX.launch`
+3. Send a navigation goal and move_base will drive the robot to the desired location.
+
+### Waypoint navigation
+
+To send waypoints for the navigation we'll use RViz's 2D Pose Estimate button. Normally, this button sends an initial position for AMCL so we remapped it's functionality in the `bringup.launch` file in the following locations:
+
+```xml
+<node name="amcl" pkg="amcl" type="amcl" output="screen">
+    <remap from="initialpose" to="initialpose_amcl"/>
+...
+```
+
+```xml
+<node pkg="follow_waypoints" type="follow_waypoints" name="follow_waypoints" output="screen">
+    <param name="goal_frame_id" value="map"/>
+    <remap from="initialpose" to="waypoint" />
+</node>
+```
+
+```xml
+<node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find hurba_advanced_navigation)/rviz/navigation.rviz">
+        <remap from="initialpose" to="waypoint" />
+</node>
+```
+
+After remapping the signals new waypoints can be added with the 2D Pose Estimate button and small blue arrows will show the waypoints in RViz:
 
 ![alt text][image5]
 
-After the map was saved we can examine the database with RTAB-Map's database viewer, that can be started with the following command:
-`rtabmap-databaseViewer ~/catkin_ws/src/Project-3-Navigation/hurba_navigation/maps/rtabmap.db`
+When the waypoints are set their execution can be started with the following command:
+`rostopic pub /path_ready std_msgs/Empty -1`
 
+
+### Setting goals from code
+We can send waypoints for the navigation stack from code, too. To send a predefined list of waypoints we can simply launch the `goals.launch` file. This launcgfile will start 2 ROS nodes:
+- add_markers
+- nav_goals
+
+Both nodes uses the same array of waypoints:
+```cpp
+float waypoints[4][3] = { 
+                          {-4.25,  0.4,  3.14}, 
+                          {-4.25, -4.5,  0.0},
+                          { 6.5,  -4.5,  1.57},
+                          { 6.5,   3.0, -1.57}  
+                        };
+```
+`nav_goals` node is sending waypoints for the navigation stack, after sending a goal it waits for the results from the navigation stack before it sends the next waypoint.
+`add_markers` node creates blue cubes for RViz to indicate the waypoints.
+
+![alt text][image4]
+
+
+### TF tree and ROS graph of nodes:
+
+
+![alt text][image3]
+![alt text][image6]
 ![alt text][image7]
-
-Once open, we will need to add some windows to get a better view of the relevant information, so:
-
-* Say yes to using the database parameters
-* View -> Constraint View
-* View -> Graph View
-
-We can check the number of loop closures during the mapping using the bottom left information:
-
-`(311, 0, 9, 0, 0, 0, 0, 0, 0) Links(N, NM, G, LS, LT, U, P, LM, GR)`
-
-Where G means the number of Global Loop Closures. The codes stand for the following: `Neighbor`, `Neighbor Merged`, `Global Loop closure`, `Local loop closure by space`, `Local loop closure by time`, `User loop closure`, and `Prior link`.
-
-### Navigation with AMCL and move_base
-1. Navigate to the `hurba_navigation` folder in the `src` folder of the catkin_workspace: `cd ~/catkin_ws/src/Project-3-Navigation/hurba_navigation/`
-2. Execute the following script: `./scripts/launch_amcl_navigation.sh`
-3. This will open 3 XTerm windows with specific timing.
-    - RViz, Gazebo world and AMCL localization
-    - move_base navigation
-    - keyboard teleoperation
-4. Localization will determine the robot's pose on the loaded map.
-5. Send a navigation goal and move_base will drive the robot to the desired location.
-
-### Navigation with RTAB-Map and move_base
-1. Navigate to the `hurba_navigation` folder in the `src` folder of the catkin_workspace: `cd ~/catkin_ws/src/Project-3-Navigation/hurba_navigation/`
-2. Execute the following script: `./scripts/launch_rtab_navigation.sh`
-3. This will open 3 XTerm windows with specific timing.
-    - RViz, Gazebo world and RTAB-Map localization
-    - move_base navigation
-    - keyboard teleoperation
-4. Localization will determine the robot's pose on the loaded map.
-5. Send a navigation goal and move_base will drive the robot to the desired location.
-
-To put RTAB-Map into localization mode we have to specify the following parameters in the launch file:
-```xml
-<!-- Put the robot into localization mode -->
-<param name="Mem/IncrementalMemory" type="string" value="false"/>
-<param name="Mem/InitWMWithAllNodes" type="string" value="true"/>
-```
-And we have to delete the following SLAM related parameter:
-```xml
-<!-- Set to false to avoid saving data when robot is not moving -->
-<param name="Mem/NotLinkedNodesKept" type="string" value="false"/>
-```
 
 ### Project structure:
 ```bash
  tree -L 3
 .
-├── README.md
 ├── documentation
-│   ├── database.png
+│   ├── frames.png
 │   ├── gazebo.png
+│   ├── goals.png
 │   ├── map.png
-│   └── rtabmap.png
-└── hurba_navigation
-    ├── CMakeLists.txt
-    ├── config
-    │   ├── base_local_planner_params.yaml
-    │   ├── costmap_common_params.yaml
-    │   ├── global_costmap_params.yaml
-    │   └── local_costmap_params.yaml
-    ├── launch
-    │   ├── amcl_localization.launch
-    │   ├── gmapping_slam.launch
-    │   ├── movebase_navigation.launch
-    │   ├── robot_description.launch
-    │   ├── rtab_map_localization.launch
-    │   ├── rtab_map_slam.launch
-    │   ├── teleop.launch
-    │   └── world.launch
-    ├── maps
-    │   ├── map.pgm
-    │   ├── map.yaml
-    │   └── rtabmap.db
-    ├── meshes
-    │   ├── chassis.dae
-    │   ├── chassis.SLDPRT
-    │   ├── chassis.STEP
-    │   ├── hokuyo.dae
-    │   ├── wheel.dae
-    │   ├── wheel.SLDPRT
-    │   └── wheel.STEP
-    ├── package.xml
-    ├── rviz
-    │   ├── amcl_navigation.rviz
-    │   ├── basic_view.rviz
-    │   ├── gmapping_slam.rviz
-    │   ├── rtab_navigation.rviz
-    │   └── rtab_slam.rviz
-    ├── scripts
-    │   ├── launch_amcl_navigation.sh
-    │   └── launch_rtab_navigation.sh
-    ├── urdf
-    │   ├── hurba_mecanum.gazebo
-    │   └── hurba_mecanum.xacro
-    └── worlds
-        ├── basic_world.world
-        ├── building.model
-        ├── building.world
-        └── empty.world
+│   ├── robschooltutorial_oct10.pdf
+│   ├── rosgraph_navigation.png
+│   ├── rosgraph_teleop.png
+│   └── waypoints.png
+├── hurba_advanced_navigation
+│   ├── CMakeLists.txt
+│   ├── config
+│   │   ├── base_local_planner_params.yaml
+│   │   ├── costmap_common_params.yaml
+│   │   ├── global_costmap_params.yaml
+│   │   ├── global_planner_params.yaml
+│   │   ├── lattice_global_planner_params.yaml
+│   │   ├── local_costmap_params.yaml
+│   │   ├── pr2.mprim
+│   │   └── teb_local_planner_params.yaml
+│   ├── launch
+│   │   ├── bringup.launch
+│   │   ├── goals.launch
+│   │   ├── navigation_advanced.launch
+│   │   ├── navigation_basic.launch
+│   │   ├── navigation_lattice.launch
+│   │   ├── robot_description.launch
+│   │   ├── teleop.launch
+│   │   └── world.launch
+│   ├── maps
+│   │   ├── map.pgm
+│   │   └── map.yaml
+│   ├── meshes
+│   │   ├── chassis.dae
+│   │   ├── chassis.SLDPRT
+│   │   ├── chassis.STEP
+│   │   ├── hokuyo.dae
+│   │   ├── wheel.dae
+│   │   ├── wheel.SLDPRT
+│   │   └── wheel.STEP
+│   ├── package.xml
+│   ├── rviz
+│   │   ├── basic_view.rviz
+│   │   └── navigation.rviz
+│   ├── src
+│   │   ├── add_markers.cpp
+│   │   └── nav_goals.cpp
+│   ├── urdf
+│   │   ├── hurba_mecanum.gazebo
+│   │   └── hurba_mecanum.xacro
+│   └── worlds
+│       ├── basic_world.world
+│       ├── building.model
+│       ├── building.world
+│       └── empty.world
+└── README.md
 ```
 
