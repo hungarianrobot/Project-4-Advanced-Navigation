@@ -139,9 +139,13 @@ float waypoints[4][3] = {
 
 ### TF tree and ROS graph of nodes:
 
-
+#### TF tree of the project:
 ![alt text][image3]
+
+#### rosgraph of teleoperation
 ![alt text][image6]
+
+#### rosgraph of navigation
 ![alt text][image7]
 
 ### Project structure:
