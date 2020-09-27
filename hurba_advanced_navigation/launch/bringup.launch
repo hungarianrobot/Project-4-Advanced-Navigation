@@ -74,9 +74,9 @@
         <remap from="initialpose" to="waypoint" />
     </node>
 
-    <!--node name="cob_base_velocity_smoother" pkg="cob_base_velocity_smoother"  type="cob_base_velocity_smoother" output="screen">
+    <node name="cob_base_velocity_smoother" pkg="cob_base_velocity_smoother"  type="cob_base_velocity_smoother" output="screen">
         <remap from="output" to="cmd_vel"/>
-    </node-->
+    </node>
 
     <!--launch rviz and remap initialpose topic to waypoint for waypoints navigation-->
     <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find hurba_advanced_navigation)/rviz/navigation.rviz">
