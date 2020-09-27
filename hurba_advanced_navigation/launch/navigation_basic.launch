@@ -2,7 +2,7 @@
 <launch>
     <!-- Move Base -->
     <node name="move_base" pkg="move_base" type="move_base" respawn="false" output="screen">
-        <!--remap from="cmd_vel" to="input"/-->
+        <remap from="cmd_vel" to="input"/>
         <param name="base_global_planner" value="navfn/NavfnROS" />
         <param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS"/>
         <param name="transform_tolerance" value="0.2"/>

@@ -2,7 +2,7 @@
 <launch>
     <!-- Move Base -->
     <node name="move_base" pkg="move_base" type="move_base" respawn="false" output="screen">
-        <!--remap from="cmd_vel" to="input"/-->
+        <remap from="cmd_vel" to="input"/>
         <!--param name="base_global_planner" value="SBPLLatticePlanner" /-->
         <param name="base_global_planner" value="global_planner/GlobalPlanner" />
         <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS"/>
