@@ -19,7 +19,7 @@ int main( int argc, char** argv )
   ros::init(argc, argv, "add_markers");
   ros::NodeHandle n;
   ros::Rate rate(20);
-  ros::Subscriber obom_sub = n.subscribe("/odom", 1, get_pose_cb);
+  ros::Subscriber odom_sub = n.subscribe("/odom", 1, get_pose_cb);
   ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
 
   // Set our initial shape type to be a cube
